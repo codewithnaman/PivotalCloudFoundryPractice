@@ -10,3 +10,8 @@ When cloud computing comes into picture, this senerio changed and we have IaaS (
 To solve all these problems it comes to Cloud Native Platform, where the developer need to focus on application and data, which matters most to business and leave rest of things to Iaas and Pivotal Cloud Foundry(Paas). Below image gives more clarity for the same:
 
 ![PCF Evolution](images/CloudNativePlatformEvolution.jpg?raw=true)
+
+
+Cloud foundry is an open source project which provides the PaaS capability, and PCF provides some additional products OSS for the cloud foundry. Let's setup PCF on the local machine.
+
+## Setup PCF on local machine
