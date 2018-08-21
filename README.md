@@ -9,4 +9,4 @@ When cloud computing comes into picture, this senerio changed and we have IaaS (
 
 To solve all these problems it comes to Cloud Native Platform, where the developer need to focus on application and data, which matters most to business and leave rest of things to Iaas and Pivotal Cloud Foundry(Paas). Below image gives more clarity for the same:
 
-![PCF Evolution](images/Cloud Native Platform Evolution.jpg?raw=true)
+![PCF Evolution](images/CloudNativePlatformEvolution.jpg?raw=true)
