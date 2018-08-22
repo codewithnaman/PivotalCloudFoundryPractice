@@ -28,7 +28,7 @@ PCF uses some terminologies which need to be understand. I will list some of one
 many lines of business. These map to Orgs within Pivotal Cloud Foundry.
 
 **2. Spaces:** Spaces are used to group applications and services. Spaces are generally created according to a project’s
- delivery environments (e.g. test, qa, staging, production ).
+ delivery environments (e.g. test, qa, staging, production).
  
 
 ## HandsOn
