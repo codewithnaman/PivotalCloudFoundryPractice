@@ -5,7 +5,7 @@ Once you complete with PCF dev setup, you will see screen below:
 
 You can also see the Apps Manager on given URL which looks like below:
 
-![PCF Dev Start](images/appsManager.jpg?raw=true)
+![PCF Apps Manager](images/appsManager.jpg?raw=true)
 
 We have 1 Org and 1 Apps. Now we start deploying different applications and see how runtime (buildpacks) will be help 
 to quickly setup runtime and setup application.
@@ -14,7 +14,7 @@ First, we start command prompt and target to API which manages our PCF instance 
 https://api.local.pcfdev.io. We also use  --skip-ssl-validation to skip SSL validation, since it is the test environment.
 Refer below screen for this:
 
-![PCF Dev Start](images/login.jpg?raw=true)
+![PCF Login](images/login.jpg?raw=true)
 
 As in above screen you can see that we targeted the API and then perform login operation using admin/admin which is
 provided in local setup of PCF dev. Also we selected the org. Since our org has one space our application will be deployed
@@ -102,5 +102,15 @@ start command:     node main.js
 ```
 
 We can see the app in apps manager.
-![PCF Dev Start](images/appsManagerNodeApplication.jpg?raw=true)
+![PCF Apps Manager 1 Application Deployed](images/appsManagerNodeApplication.JPG?raw=true)
 
+Similar we will deploy 3 more application. I uploaded the application in same folder for practice purpose.
+<br/>AppsManager screen after uploading all 4 applications.
+ ![PCF Apps Manager 1 Application Deployed](images/appsManagerWith4Applications.jpg?raw=true)
+ 
+ Now we had deployed so many applications. Time for cleanup. To delete a app from PCF use **cf delete <application_name>**
+ command.
+ 
+ Note: When you deploy an artifact use below command<br/>
+ **cf push <application_name> -p <path_for_artifact> -m <memory> --route-path <path_append_to_cf_url>**
+ 
