@@ -1,4 +1,4 @@
-#Pushing application to PCF
+# Pushing application to PCF
 Once you complete with PCF dev setup, you will see screen below:
 
 ![PCF Dev Start](images/cfDevStart.jpg?raw=true)
