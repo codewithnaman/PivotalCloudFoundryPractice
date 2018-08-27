@@ -14,7 +14,7 @@ To solve all these problems it comes to Cloud Native Platform, where the develop
 data, which matters most to business and leave rest of things to IaaS and Pivotal Cloud Foundry(PaaS). Below image 
 gives more clarity for the same:
 
-![PCF Evolution](images/CloudNativePlatformEvolution.jpg?raw=true)
+![PCF Evolution](images/CloudNativePlatformEvolution1.png?raw=true)
 
 
 Cloud foundry is an open source project which provides the PaaS capability, and PCF provides some additional products
@@ -36,9 +36,9 @@ To perform the hands on over the PCF we need to setup the PCF runtime or use PCF
 
 ### Local System Setup
 1. To setup the PCF at local system, download PCF Dev and set it up on your machine.
-    https://network.pivotal.io/products/pcfdev#/releases/88478
+    <br/>https://network.pivotal.io/products/pcfdev#/releases/88478
 2. To setup your PCF Dev and first application refer below link
-    https://pivotal.io/platform/pcf-tutorials/getting-started-with-pivotal-cloud-foundry-dev/introduction
+    <br/>https://pivotal.io/platform/pcf-tutorials/getting-started-with-pivotal-cloud-foundry-dev/introduction
 
 ### PCF Webservices
 PCF provides it's runtime for one org and one application almost free. Please refer below link and signup
@@ -47,4 +47,4 @@ to use PCF runtime. Use below link to register and use runtime
 https://run.pivotal.io/
 
 Lesson 1 : Pushing application to PCF<br/>
-Lesson 2 : Logging and High availability 
+Lesson 2 : PCF Architecture, Logging and High availability 
