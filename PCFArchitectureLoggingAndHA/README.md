@@ -83,11 +83,53 @@ those in subsystems.
    ![Diego Architecture](images/diego-flow.png?raw=true)
   
   ### **Loggregator :**
-  
-  
+  The Diego Executor collect logs to metron which then forwards app logs, errors, and app and Diego metrics to the 
+  Loggregator Doppler component. Loggregator consist of below subsystems:
+  #### **i. Doppler :**
+  Dopplers gather logs from the Metron Agents, store them in temporary buffers, and forward them to the Traffic 
+  Controller or to third-party syslog drains like Splunk or papertrail.
+  #### **ii. Traffic Controller :**
+  The Traffic Controller handles client requests for logs. It gathers and collates messages from all Doppler servers, \
+  and provides external API and message translation as needed for legacy APIs.Traffic Controller also exposes the Firehose.
+  #### **iii. Firehose :**
+  A websockert endpoint that expose logs, HTTP events, and container metrics from all applications, and metrics from
+  all Cloud Foundry system components.Generally the Firehose is plugged in to Nozzles. Nozzles are programs which 
+  consume data from the Loggregator Firehose. Nozzles can be configured to select, buffer, and transform data, and 
+  forward it to other applications and services. 
+  <br/><br/>
+  ![Loggregator Architecture](images/loggregator.png?raw=true)
+     
   ### **Cloud Controller API :**
+  The Cloud Controller provides REST API endpoints for clients to access and manage the system. 
+  Cloud Controller maintains a database with tables for orgs, spaces, services, user roles, and more in CC_DB.
+  Cloud Controller also maintains a database for the app packages and droplet in BLOB_STORE. Cloud Controller bridge 
+  translates app specific language to generic language of tasks of LRPs.
+  
   
   ### **Routing :**
-
+  The router routes incoming traffic to the appropriate component, either a Cloud Controller component or a hosted 
+  application running on a Diego Cell.Router periodically queries the Diego Bulletin Board System (BBS) to determine 
+  which cells and containers each application currently runs on. Using this information, the router recomputes new 
+  routing tables based on the IP addresses of each cell virtual machine (VM) and the host-side port numbers for the 
+  cell’s containers.
+  
+  ### **BuildPacks**
+  Buildpacks provide framework and runtime support for your applications. 
+  Buildpacks are responsible for building the droplets. We will talk about it in details in upcoming modules
 
 ## 3. High Availability
+High availability in cloud foundry has 4 levels. There are availability zones like distributed systems and managed from 
+zones. If a zone is down we have other availability zone to serve. Elastic runtime process monitored and automatically 
+restarted. These task are carried out by BOSH.
+
+There are two process running on each VM known as monit or BOSH agent, to monitor the processes on the component VMs 
+that work together to keep your applications running, such as nsync, BBS, and Cell Rep. 
+If monit detects a failure, it restarts the process and notifies the BOSH agent on the VM. 
+The BOSH agent notifies the BOSH Health Monitor, which triggers responders through plugins such as email 
+notifications or paging. If any application crashes the BOSH health monitor detects it by heartbeat signals transmitted by 
+BOSH agent using the messaging queue. If it detects failure then it restart it and notify configured users.
+
+The applications self-heal, if any instance got crashed. Rep gives the data to BBS which is used by
+brain converger to compare the actual state and desired state, if found not in desired state then it perform 
+action to achieve desired state.
+
