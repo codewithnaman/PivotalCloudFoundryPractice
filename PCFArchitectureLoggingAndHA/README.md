@@ -156,7 +156,7 @@ Below screen shows you the logs of application and cell.
 ![Logging Hands on](images/logging.png?raw=true)
 
 We can also see logs in our app manager. Below screenshot shows the app manager logs screen.
-![App Manager Logging Hands on](images/loggingUI.png?raw=true)
+![App Manager Logging Hands on](images/loggingUI.PNG?raw=true)
 
 User **cf events** command to see the events of application.
 ```cmd
