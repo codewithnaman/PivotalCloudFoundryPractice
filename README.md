@@ -46,5 +46,6 @@ to use PCF runtime. Use below link to register and use runtime
 
 https://run.pivotal.io/
 
-Lesson 1 : Pushing application to PCF<br/>
-Lesson 2 : PCF Architecture, Logging and High availability 
+[Lesson 1 : Pushing application to PCF](PushApplicationToPCF/README.md)<br/>
+[Lesson 2 : PCF Architecture, Logging and High availability](PCFArchitectureLoggingAndHA/README.md)
+[Lesson 3 : Services and Manifests](ServicesAndManiFests/README.md)
