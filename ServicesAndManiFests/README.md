@@ -1,5 +1,5 @@
 # Services
-Let's again talk about cloud native apps and 12-factor apps. In this section we will talk about below from 12-factor 
+Let's talk again about cloud native apps and 12-factor apps. In this section we will talk about below from 12-factor 
 apps
 
 1. Config
@@ -21,7 +21,7 @@ PCF has 2 types of services to configure.
 2. User provided service instances
 
 Services configuration like their access URLs and other properties passed to application using environment variables.
-When we bind a service to a application it's properties are set to Environment variables of container. When can connect
+When we bind a service to a application it's properties are set to Environment variables of container. We can connect
 to these backend services using these environment variables. We will see in hand-on how these properties are set and used
 by our applications.
 
@@ -220,7 +220,7 @@ For bindable services, Cloud Foundry adds connection details to the VCAP_SERVICE
  that contains an object for each service for which one or more instances are bound to the application. 
  The service object contains a child object for each service instance of that service that is bound to the application.
  To view this JSON document or environment details use below command.<br/>
- **cf env <service_name>
+ **cf env <service_name>**
 ```cmd
 C:\Users\Naman Gupta\Desktop\02\application>cf env attedee-service
 Getting env variables for app attedee-service in org pcfdev-org / space pcfdev-space as admin...
@@ -420,12 +420,12 @@ No staging env variables have been set
 
 C:\Users\Naman Gupta\Desktop\02\application>REM 6. Check if application can see as service and can insert data.
 ```
-Below screenshot shows service and operation we can perform after attaching service.
+Below screenshot shows service and operation, we can perform after attaching service.
 ![Post_Check_For_Service](images/PostServiceArticulateApplication.png?raw=true)
 
 For more on how to build the different type of user provided service please refer below:
 
 https://docs.pivotal.io/pivotalcf/2-2/devguide/services/user-provided.html
 
-#Manifest
+# Manifest
 
