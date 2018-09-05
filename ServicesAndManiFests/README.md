@@ -429,3 +429,143 @@ https://docs.pivotal.io/pivotalcf/2-2/devguide/services/user-provided.html
 
 # Manifest
 
+You can imagine how tedious things would be if we had to repeatedly pass a handful of command arguments to the **cf cli** 
+each time we push an application. There’s a better way: application manifests allow you to consolidate into a single 
+file all of our application’s deployment metadata, including the application name, memory, path, hostname, and much 
+more. We can associate services and environment variables to our application in a single manifest file.
+
+
+To more about more of tags used in manifest file use below link:<br/>
+https://docs.pivotal.io/pivotalcf/2-2/devguide/deploy-apps/manifest.html
+
+Hands-on
+For hands-on we will do reverse engineer for the application we deployed. We will ask cf-to create the manifest file 
+for the attendee-service and then edit the yml generated for increasing number of instances. Below are the steps 
+1. Generate manifest for the application
+2. Edit the manifest file
+3. Path is not in file so add it as well
+4. Fire command cf push
+```cmd
+C:\Users\Naman Gupta\Desktop\02\application>REM 1. Generate manifest for the application
+C:\Users\Naman Gupta\Desktop\02\application>cf create-app-manifest attendee-app -p ./manifest.yml
+Creating an app manifest from current settings of app attendee-app in org pcfdev-org / space pcfdev-space as admin...
+OK
+Manifest file created successfully at ./manifest.yml
+
+C:\Users\Naman Gupta\Desktop\02\application>REM 2. Edit the manifest file
+C:\Users\Naman Gupta\Desktop\02\application>REM 3. Path is not in file so add it as well
+C:\Users\Naman Gupta\Desktop\02\application>REM 4. Fire command cf push
+C:\Users\Naman Gupta\Desktop\02\application>cf push
+Pushing from manifest to org pcfdev-org / space pcfdev-space as admin...
+Using manifest file C:\Users\Naman Gupta\Desktop\02\application\manifest.yml
+Getting app info...
+Updating app with these attributes...
+  name:                attendee-app
+  path:                C:\Users\Naman Gupta\Desktop\02\application\attendee-service-0.1.jar
+  disk quota:          512M
+  health check type:   port
+  instances:           2
+  memory:              768M
+  stack:               cflinuxfs2
+  services:
+    attendee-mysql
+  routes:
+    attendee-app-talkative-panda.local.pcfdev.io
+
+Updating app attendee-app...
+Mapping routes...
+Comparing local files to remote cache...
+Packaging files to upload...
+Uploading files...
+ 632.09 KiB / 632.09 KiB [=========================================================================================================================] 100.00% 1s
+
+Waiting for API to complete processing files...
+
+Staging app and tracing logs...
+   Downloading dotnet-core_buildpack...
+   Downloading java_buildpack...
+   Downloading ruby_buildpack...
+   Downloading nodejs_buildpack...
+   Downloaded dotnet-core_buildpack
+   Downloading go_buildpack...
+   Downloaded java_buildpack
+   Downloading python_buildpack...
+   Downloaded ruby_buildpack
+   Downloading php_buildpack...
+   Downloaded nodejs_buildpack
+   Downloading staticfile_buildpack...
+   Downloading binary_buildpack...
+   Downloaded go_buildpack
+   Downloaded python_buildpack
+   Downloaded php_buildpack
+   Downloaded staticfile_buildpack
+   Downloaded binary_buildpack
+   Creating container
+   Successfully created container
+   Downloading app package...
+   Downloaded app package (26.6M)
+   Downloading build artifacts cache...
+   Downloaded build artifacts cache (109B)
+   Staging...
+   -----> Java Buildpack Version: v3.13 (offline) | https://github.com/cloudfoundry/java-buildpack.git#03b493f
+   -----> Downloading Open Jdk JRE 1.8.0_121 from https://java-buildpack.cloudfoundry.org/openjdk/trusty/x86_64/openjdk-1.8.0_121.tar.gz (found in cache)
+          Expanding Open Jdk JRE to .java-buildpack/open_jdk_jre (2.1s)
+   -----> Downloading Open JDK Like Memory Calculator 2.0.2_RELEASE from https://java-buildpack.cloudfoundry.org/memory-calculator/trusty/x86_64/memory-calculat
+or-2.0.2_RELEASE.tar.gz (found in cache)
+          Memory Settings: -XX:MaxMetaspaceSize=104857K -XX:MetaspaceSize=104857K -Xms681574K -Xss349K -Xmx681574K
+   -----> Downloading Container Certificate Trust Store 2.0.0_RELEASE from https://java-buildpack.cloudfoundry.org/container-certificate-trust-store/container-c
+ertificate-trust-store-2.0.0_RELEASE.jar (found in cache)
+          Adding certificates to .java-buildpack/container_certificate_trust_store/truststore.jks (0.9s)
+   -----> Downloading Spring Auto Reconfiguration 1.10.0_RELEASE from https://java-buildpack.cloudfoundry.org/auto-reconfiguration/auto-reconfiguration-1.10.0_R
+ELEASE.jar (found in cache)
+   Exit status 0
+   Staging complete
+   Uploading droplet, build artifacts cache...
+   Uploading build artifacts cache...
+   Uploading droplet...
+   Uploaded build artifacts cache (109B)
+   Uploaded droplet (72.1M)
+   Uploading complete
+   Destroying container
+
+Waiting for app to start...
+
+name:              attendee-app
+requested state:   started
+instances:         2/2
+usage:             768M x 2 instances
+routes:            attendee-app-talkative-panda.local.pcfdev.io
+last uploaded:     Wed 05 Sep 23:26:47 IST 2018
+stack:             cflinuxfs2
+buildpack:         container-certificate-trust-store=2.0.0_RELEASE java-buildpack=v3.13-offline-https://github.com/cloudfoundry/java-buildpack.git#03b493f
+                   java-main open-jdk-like-jre=1.8.0_121 open-jdk-like-memory-calculator=2.0.2_RELEASE spring-auto-reconfiguration=1.10...
+start command:     CALCULATED_MEMORY=$($PWD/.java-buildpack/open_jdk_jre/bin/java-buildpack-memory-calculator-2.0.2_RELEASE
+                   -memorySizes=metaspace:64m..,stack:228k.. -memoryWeights=heap:65,metaspace:10,native:15,stack:10 -memoryInitials=heap:100%,metaspace:100%
+                   -stackThreads=300 -totMemory=$MEMORY_LIMIT) && JAVA_OPTS="-Djava.io.tmpdir=$TMPDIR
+                   -XX:OnOutOfMemoryError=$PWD/.java-buildpack/open_jdk_jre/bin/killjava.sh $CALCULATED_MEMORY
+                   -Djavax.net.ssl.trustStore=$PWD/.java-buildpack/container_certificate_trust_store/truststore.jks
+                   -Djavax.net.ssl.trustStorePassword=java-buildpack-trust-store-password" && SERVER_PORT=$PORT eval exec
+                   $PWD/.java-buildpack/open_jdk_jre/bin/java $JAVA_OPTS -cp $PWD/. org.springframework.boot.loader.JarLauncher
+
+     state     since                  cpu     memory           disk             details
+#0   running   2018-09-05T17:58:44Z   35.1%   374.9M of 768M   152.4M of 512M
+#1   running   2018-09-05T17:58:44Z   35.4%   363.3M of 768M   152.4M of 512M
+
+C:\Users\Naman Gupta\Desktop\02\application>
+```
+YML file after editing
+```yml
+applications:
+applications:
+- name: attendee-app
+  disk_quota: 512M
+  instances: 2
+  memory: 768M
+  routes:
+  - route: attendee-app-talkative-panda.local.pcfdev.io
+  services:
+  - attendee-mysql
+  path: ./attendee-service-0.1.jar
+  stack: cflinuxfs2
+  timeout: 100
+```
