@@ -115,7 +115,7 @@ To bind the security group to our lifecycle of application we use below commands
 https://docs.pivotal.io/pivotalcf/2-2/concepts/asg.html<br/>
 https://docs.pivotal.io/pivotalcf/2-2/concepts/security.html#network-traffic
 
-#Log Drain
+# Log Drain
 Cloud Foundry’s loggregator subsystem routes applications' log streams out of the containers from which they emanate, 
 and makes them accessible via the cf logs command.
 
@@ -128,7 +128,7 @@ third party systems. Below are steps to setup log draining.
 1. Install or create an account for the log aggregator system
 2. Create a User Provided Service Instance that streams logs to log system.<br/>
 **cf create-user-provided-service articulate-log-drain -l syslog://{{syslog_drain_url}}**
-3. Bind the articulate-log-drain service to the articulate application.
+3. Bind the articulate-log-drain service to the articulate application.<br/>
 **cf bind-service <application_name> <log_service_name>**
 
 ### More on log drain
