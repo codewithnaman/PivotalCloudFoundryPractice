@@ -302,3 +302,96 @@ Now the application is completely deployed using blue green deployment and in ze
 ## For more reading on Blue Green deployment.
 https://docs.pivotal.io/pivotalcf/2-2/devguide/deploy-apps/blue-green.html 
 
+# Micro-services
+We will talk about micro-service architecture at high level and how PCF helps to mitigate some of risk while developing 
+the application in micro-service pattern. We will talk about below points to understand micro-service pattern:
+1. Monolith
+2. Micro-service
+3. Micro-service with PCF
+
+## 1. Monolith
+Consider out tier application in which all the services, data access, views binded in single artifact is known as monolith
+pattern of application. Also data is stored in one database or datastore in most traditional monolith applications. This
+traditional monolith is not appropriate for cloud because it implement some of anti-patterns for the cloud like maintaining
+the session state and pass around to cluster to maintain the state. Additionally the monolith contains number of services
+in one artifact, so if you wanna scale for one service we need to deploy whole monolith, in which the other services consume 
+resources with the one you want to scale.
+
+In monolith pattern if we introduce and new feature for a service or fix bug in service, then we need to deploy whole artifact. 
+Another challenge with monolith is that too many developers in one code base, which need more if enhancing different services
+of application by group of the developers. Also initial learning curve for new developer is high since he need to understand the large
+codebase.
+
+With monolith long term of commitment to tech stack. It's unlikely to change when we are already running the application,
+and can't transform the system quickly in new languages which may provide you new features or performance.
+
+We have talked a lot about the monolith and it's impact over development and deployment perspective. Let's move on to micro-services.
+
+## 2. Micro-service
+**"Micro-services are loose coupled Service-Oriented architecture with bounded context."**
+
+Let's understand the above statement. If we look the traditional Enterprise service bus(ESB)/Service Oriented Architecture(SOA)
+there is a large service bus which interacts with the different services, orchestrate services to work in sync. And scaling 
+this part of application is pretty challenging. Also in ESB or SOA require the orchestrator which can be bottleneck which prohibit 
+scaling.
+![ESB/SOA](images/ESB.jpg?raw=true)
+Micro-service taken a lot of great things that SOA had and leaving some of other stuff behind and building on that.
+Micro-services know how to discover each other and use the functionality of services. They don't need an 
+orchestrator which communicate how the other service can be reached out.
+
+Best Analogy is to describe between the SOA and microservice is the orchestrator and choreography just like in dance..
+
+A microservice has a single responsibility. Consider like linux commands like they can be used as pipe and each function
+just perform a single functionality.<br/>
+e.g. history | grep 'txt' | count
+
+Now comes to bounded context, the bounded context implies here in Domain driven design(DDD) which makes a clear boundry 
+for the services that can be divided for microservice architecture. Below link has DDD and BDD in detail explanation.</br>
+https://microservices.io/patterns/decomposition/decompose-by-subdomain.html</br>
+https://microservices.io/patterns/decomposition/decompose-by-business-capability.html
+
+With microservice we can have freedom to choose the persistence solution and language to develop 
+a particular application. Also we can device specific gateways for our services. We can also expose the different protocols
+for different services, if needed.
+
+**Benefits**<br/>
+1. Change cycle decoupled and enabling frequent deployments. We can easily deploy new feature or bug fixes in a service
+because, it is going to impact one service other will keep running.
+2. Allow for efficient scaling. We need to scale service which is handling more load as compare to scaling complete monolith.
+3. Developers learn a smaller codebase faster.
+4. Fewer developers in each code base.
+
+Now we will discuss the challenges which comes while implementing microservice architecture for application.
+1. Microservices have significant operations overhead.
+2. Need to monitor application and their application instances keep running.
+3. Services like datastores or MQs etc.
+4. Monitoring and logs from different instances of application.
+5. Scaling the application.
+6. Dynamic routing.
+
+## 3. Micro-service with PCF
+PCF mitigated some of challenges which comes with the microservices.
+**1. Microservices have significant operations overhead.**<br/>
+Consider bulidpack  in PCF which help you to provision the dependencies on application servers. 
+
+**2. Need to monitor application and their application instances keep running.**<br/>
+the health management with the 4 levels of high availability,which provides you high application availability time.
+
+**3. Services like datastores or MQs etc.**<br/>
+PCF provides the marketplace for most commonly used services of application.
+
+**4. Monitoring and logs from different instances of application.**<br/>
+As we discussed in our previous modules that how the log management is done in PCF. Also PCF provides different 
+metrics for our application instances and aggregate them at single place so that it is easy to monitor and analyze application
+performance.
+
+**5. Scaling the application.**<br/>
+Scaling can be hectic without solution like PCF or AWS. But as we seen in our previous modules the manual scaling is so 
+easy with PCF. Also PCF provides the autoscaling using scaling policy, we will learn about in or upcoming modules.
+
+**6. Dynamic routing.**<br/>
+Provision new instance and provide route to this instance can also share load is tedious task, With PCF achieves easily
+and traffic is directed immediately to new instance as the instance come up.
+
+
+
