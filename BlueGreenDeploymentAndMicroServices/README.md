@@ -334,7 +334,9 @@ Let's understand the above statement. If we look the traditional Enterprise serv
 there is a large service bus which interacts with the different services, orchestrate services to work in sync. And scaling 
 this part of application is pretty challenging. Also in ESB or SOA require the orchestrator which can be bottleneck which prohibit 
 scaling.
+
 ![ESB/SOA](images/ESB.jpg?raw=true)
+
 Micro-service taken a lot of great things that SOA had and leaving some of other stuff behind and building on that.
 Micro-services know how to discover each other and use the functionality of services. They don't need an 
 orchestrator which communicate how the other service can be reached out.
