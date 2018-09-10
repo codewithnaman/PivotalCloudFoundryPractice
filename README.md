@@ -51,3 +51,4 @@ https://run.pivotal.io/
 [Lesson 3 : Services and Manifests](ServicesAndManiFests/README.md)<br/>
 [Lesson 4 : Application Security Groups and Log Drain](ASGAndLogDrain/README.md)<br/>
 [Lesson 5 : Blue Green Deployments and Microservices](BlueGreenDeploymentAndMicroServices/README.md)
+[Lesson 6 : Application Autoscaler, Performance Monitor, and Metrics](AutoScalerAndPerformanceMonitor/README.md)
