@@ -55,3 +55,18 @@ C:\Users\Naman Gupta\Desktop\02\01\demos\articulate>
 ![Scale Notification](images/ScaleNotification.PNG?raw=true)
 
 # Application Performance Monitoring
+In this section we will talk about application performance monitoring using tools like AppDynamics or new relic. For this
+hands-on we need to create a account over new relic, so I am explaining theory and steps in detail, without giving any
+screenshot. If we wanna monitor our application performance with third party apps like AppDynamics or new relic follow
+below steps:
+1. Create a user-created-service or service(if available in marketplace)
+2. Bind this service with our applications
+3. Restage application so it can download necessary library and build with droplet and spin up container
+4. Now we can monitor these apps performance in AppDynamics or new Relic
+
+# Metrics
+PCF Metrics provides application metrics for your application directly inside cloudfoundry. It’s an innovative tool 
+that combines application events, metrics (cpu, memory, network), and logs into a powerful view that can help you 
+monitor and gain insight into your application’s behavior over time. Below is a high level image of Metrics view of 
+cloud foundry. It is in Beta phase but still good tool for application monitoring.
+![PCF Metrics](images/PCFMetrics.png?raw=true)
