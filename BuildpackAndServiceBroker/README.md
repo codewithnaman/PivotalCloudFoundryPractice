@@ -206,3 +206,462 @@ Below is the output after changing environment variable for JDK version.
 ![Buildpack JavaVersion change](images/postVersionChange.PNG?raw=true)
 
 # Service Broker
+Service broker is an API which specifies how a service can be created,bind,unbind and destroyed. When we were working 
+with services(managed services), let's understand what happens behind the scene.
+
+Managed services must implement the service broker API. The service broker API is a RESTful API over HTTP. So our service
+can be reside anywhere in terms of deployment, it can be within cloud foundry or it can be at different location such as
+different VM or different servers etc. Below is the brief summary of the service broker API which need be implement for
+new service:<br/>
+*  **Catalog management** - describe the plans offered by the service
+*  **Provision** - create a service instance
+*  **Deprovision** - delete a service instance
+*  **Bind** - Create a binding between an app and service instance
+*  **Unbind** - Delete binding
+
+When we start implementing a service generally we start with catalog management API which tells about the plans offered by
+our service like normal,gold,diamond for different level of services,it is just descriptive information about what is going
+to be offered by service and plan.
+
+Then comes to provision state, in provisioning the caller calls the Rest API for cloud controller, Cloud controller then 
+calls Service broker API to create a new instance of service. The implementation depends on the implementer can vary 
+from service to service.When we get this call we can provision a new VM, use existing VM and create a new instance or 
+can provide shared instance with find boundary to access. Then it return instance information to Cloud controller, cloud
+controller keep information in it's DB to give information of the instance created and then return back pointer to the caller.
+
+For deprovisioing similar type of steps occur. So not describing here. You can think as reveres process to the provisioning.
+
+When it comes to binding the CLI calls cloud controller then we give request to service broker, broker retrieve or create
+credentials for the service and return back to cloud controller. Cloud controller save these variable to their DB to 
+populate the environment variables in VCAP variable. Then control return back to CLI. Best practice is that whenever a call for bind is received then we need to create new
+instance of the credentials and provide to CC.
+
+Let's do the some hands-on over the service broker.
+
+## Hands-ON
+First for this demo we are again going to use dev environment and we used below two projects from Pivtol education and spring cloud repositories.<br/>
+https://github.com/spring-cloud/spring-cloud-cloudfoundry-service-broker<br/>
+https://github.com/pivotal-education/pcf-spring-music-code<br/>
+
+We will first build the application which, I already build using IDE and gradle from IntelliJ. You can choose your own IDE 
+for building application and explore code for understanding.How cloud foundry service broker can be write in simplest way.
+ You can use below documentation for more understanding over it. For the basic knowledge I would like to highlight the 
+ spring cloud framework for cloud foundry service broker provides the classes, interfaces and REST API mapping to create 
+ service broker and register them as service in cloud foundry. 
+ 
+Let's push our service broker application to cloud foundry. 
+```cmd
+C:\Users\Naman Gupta\Desktop\02\07\applications>cf push mongo-service-broker -p ./cloudfoundry-mongodb-service-broker.jar -m 768M --random-route --no-start
+Pushing app mongo-service-broker to org pcfdev-org / space pcfdev-space as user...
+Getting app info...
+Creating app with these attributes...
++ name:       mongo-service-broker
+  path:       C:\Users\Naman Gupta\Desktop\02\07\applications\cloudfoundry-mongodb-service-broker.jar
++ memory:     768M
+  routes:
++   mongo-service-broker-wise-ostrich.local.pcfdev.io
+
+Creating app mongo-service-broker...
+Mapping routes...
+Comparing local files to remote cache...
+Packaging files to upload...
+Uploading files...
+ 16.52 KiB / 16.52 KiB [===========================================================================================================================] 100.00% 1s
+
+Waiting for API to complete processing files...
+
+name:              mongo-service-broker
+requested state:   stopped
+instances:         0/1
+usage:             768M x 1 instances
+routes:            mongo-service-broker-wise-ostrich.local.pcfdev.io
+last uploaded:     Sat 15 Sep 13:47:54 IST 2018
+stack:             cflinuxfs2
+buildpack:
+start command:
+
+There are no running instances of this app.
+
+
+C:\Users\Naman Gupta\Desktop\02\07\applications>
+```
+
+## Set environment variables.
+These environment variables get used by the broker to generate the catalog. These values should be unique across the 
+entire Pivotal Cloud Foundry instance to meet the broker API specifications.
+```cmd
+C:\Users\Naman Gupta\Desktop\02\07\applications>cf set-env mongo-service-broker SERVICE_ID mongo-service-broker-naman
+Setting env variable 'SERVICE_ID' to 'mongo-service-broker-naman' for app mongo-service-broker in org pcfdev-org / space pcfdev-space as user...
+OK
+TIP: Use 'cf restage mongo-service-broker' to ensure your env variable changes take effect
+
+C:\Users\Naman Gupta\Desktop\02\07\applications>cf set-env mongo-service-broker SERVICE_NAME MongoDB-Naman
+Setting env variable 'SERVICE_NAME' to 'MongoDB-Naman' for app mongo-service-broker in org pcfdev-org / space pcfdev-space as user...
+OK
+TIP: Use 'cf restage mongo-service-broker' to ensure your env variable changes take effect
+
+C:\Users\Naman Gupta\Desktop\02\07\applications>cf set-env mongo-service-broker PLAN_ID monog-plan-standard
+Setting env variable 'PLAN_ID' to 'monog-plan-standard' for app mongo-service-broker in org pcfdev-org / space pcfdev-space as user...
+OK
+TIP: Use 'cf restage mongo-service-broker' to ensure your env variable changes take effect
+
+C:\Users\Naman Gupta\Desktop\02\07\applications>cf start mongo-service-broker
+Starting app mongo-service-broker in org pcfdev-org / space pcfdev-space as user...
+
+Staging app and tracing logs...
+   Downloading dotnet-core_buildpack...
+   Downloading java_buildpack...
+   Downloading ruby_buildpack...
+   Downloading nodejs_buildpack...
+   Downloaded dotnet-core_buildpack
+   Downloading go_buildpack...
+   Downloaded nodejs_buildpack
+   Downloading python_buildpack...
+   Downloaded ruby_buildpack
+   Downloading php_buildpack...
+   Downloading staticfile_buildpack...
+   Downloaded php_buildpack
+   Downloading binary_buildpack...
+   Downloaded python_buildpack
+   Downloaded staticfile_buildpack
+   Downloaded java_buildpack
+   Downloaded go_buildpack
+   Downloaded binary_buildpack
+   Creating container
+   Successfully created container
+   Downloading app package...
+   Downloaded app package (17.3M)
+   Staging...
+   -----> Java Buildpack Version: v3.13 (offline) | https://github.com/cloudfoundry/java-buildpack.git#03b493f
+   -----> Downloading Open Jdk JRE 1.8.0_121 from https://java-buildpack.cloudfoundry.org/openjdk/trusty/x86_64/openjdk-1.8.0_121.tar.gz (found in cache)
+          Expanding Open Jdk JRE to .java-buildpack/open_jdk_jre (2.2s)
+   -----> Downloading Open JDK Like Memory Calculator 2.0.2_RELEASE from https://java-buildpack.cloudfoundry.org/memory-calculator/trusty/x86_64/memory-calculat
+or-2.0.2_RELEASE.tar.gz (found in cache)
+          Memory Settings: -Xmx681574K -XX:MaxMetaspaceSize=104857K -Xss349K -Xms681574K -XX:MetaspaceSize=104857K
+   -----> Downloading Container Certificate Trust Store 2.0.0_RELEASE from https://java-buildpack.cloudfoundry.org/container-certificate-trust-store/container-c
+ertificate-trust-store-2.0.0_RELEASE.jar (found in cache)
+          Adding certificates to .java-buildpack/container_certificate_trust_store/truststore.jks (2.1s)
+   -----> Downloading Spring Auto Reconfiguration 1.10.0_RELEASE from https://java-buildpack.cloudfoundry.org/auto-reconfiguration/auto-reconfiguration-1.10.0_R
+ELEASE.jar (found in cache)
+   Exit status 0
+   Staging complete
+   Uploading droplet, build artifacts cache...
+   Uploading build artifacts cache...
+   Uploading droplet...
+   Uploaded build artifacts cache (109B)
+   Uploaded droplet (62.7M)
+   Uploading complete
+   Destroying container
+
+Waiting for app to start...
+
+name:              mongo-service-broker
+requested state:   started
+instances:         1/1
+usage:             768M x 1 instances
+routes:            mongo-service-broker-delightful-kookaburra.local.pcfdev.io
+last uploaded:     Sat 15 Sep 14:06:36 IST 2018
+stack:             cflinuxfs2
+buildpack:         container-certificate-trust-store=2.0.0_RELEASE java-buildpack=v3.13-offline-https://github.com/cloudfoundry/java-buildpack.git#03b493f
+                   java-main open-jdk-like-jre=1.8.0_121 open-jdk-like-memory-calculator=2.0.2_RELEASE spring-auto-reconfiguration=1.10...
+start command:     CALCULATED_MEMORY=$($PWD/.java-buildpack/open_jdk_jre/bin/java-buildpack-memory-calculator-2.0.2_RELEASE
+                   -memorySizes=metaspace:64m..,stack:228k.. -memoryWeights=heap:65,metaspace:10,native:15,stack:10 -memoryInitials=heap:100%,metaspace:100%
+                   -stackThreads=300 -totMemory=$MEMORY_LIMIT) && JAVA_OPTS="-Djava.io.tmpdir=$TMPDIR
+                   -XX:OnOutOfMemoryError=$PWD/.java-buildpack/open_jdk_jre/bin/killjava.sh $CALCULATED_MEMORY
+                   -Djavax.net.ssl.trustStore=$PWD/.java-buildpack/container_certificate_trust_store/truststore.jks
+                   -Djavax.net.ssl.trustStorePassword=java-buildpack-trust-store-password" && SERVER_PORT=$PORT eval exec
+                   $PWD/.java-buildpack/open_jdk_jre/bin/java $JAVA_OPTS -cp $PWD/. org.springframework.boot.loader.JarLauncher
+
+     state     since                  cpu     memory           disk             details
+#0   running   2018-09-15T08:38:40Z   51.9%   315.6M of 768M   142.1M of 512M
+
+C:\Users\Naman Gupta\Desktop\02\07\applications>
+```
+We have deployed our application, set some environment variables and started application. Let's hit the catalog url. 
+The URL has basic authentication so it need username and password which is pivotal and keepitsimple respectively.
+
+![Catalog URL](images/CatalogURLPage.PNG?raw=true)
+
+Now we will Register Service Broker.We will be creating a Space-Scoped broker. Space-Scoped brokers help you during the 
+development/testing of your service broker, because they are private to a space and don’t require an admin to enable 
+access (list it in the marketplace, provision service instances, etc).
+
+To create service broker we will use below command. <br/>
+**cf create-service-broker {SERVICE_BROKER} {USERNAME} {PASSWORD} {URL} [--space-scoped]**
+```cmd
+C:\Users\Naman Gupta\Desktop\02\07\applications>cf create-service-broker
+Incorrect Usage: the required arguments `SERVICE_BROKER`, `USERNAME`, `PASSWORD` and `URL` were not provided
+
+NAME:
+   create-service-broker - Create a service broker
+
+USAGE:
+   cf create-service-broker SERVICE_BROKER USERNAME PASSWORD URL [--space-scoped]
+
+ALIAS:
+   csb
+
+OPTIONS:
+   --space-scoped      Make the broker's service plans only visible within the targeted space
+
+SEE ALSO:
+   enable-service-access, service-brokers, target
+
+C:\Users\Naman Gupta\Desktop\02\07\applications>cf create-service-broker mongo-service-broker-naman pivotal keepitsimple http://mongo-service-broker-delightful-
+kookaburra.local.pcfdev.io --space-scoped
+Creating service broker mongo-service-broker-naman in org pcfdev-org / space pcfdev-space as user...
+OK
+
+C:\Users\Naman Gupta\Desktop\02\07\applications>cf service-brokers
+Getting service brokers as user...
+
+name                         url
+mongo-service-broker-naman   http://mongo-service-broker-delightful-kookaburra.local.pcfdev.io
+
+C:\Users\Naman Gupta\Desktop\02\07\applications>cf m
+Getting services from marketplace in org pcfdev-org / space pcfdev-space as user...
+OK
+
+service         plans             description
+MongoDB-Naman   standard          A simple MongoDB service broker implementation
+local-volume    free-local-disk   Local service docs: https://github.com/cloudfoundry-incubator/local-volume-release/
+p-mysql         512mb, 1gb        MySQL databases on demand
+p-rabbitmq      standard          RabbitMQ is a robust and scalable high-performance multi-protocol messaging broker.
+p-redis         shared-vm         Redis service to provide a key-value store
+
+TIP:  Use 'cf marketplace -s SERVICE' to view descriptions of individual plans of a given service.
+
+C:\Users\Naman Gupta\Desktop\02\07\applications>
+```
+
+As we can see in above output the MongoDB-Naman service is created under the managed services of the mongo. The deployment
+of the mongo database I had done in the docker. Below shows the output from the docker toolbox.
+
+```cmd
+Naman Gupta@DESKTOP-OBR6B46 MINGW64 /c/Program Files/Docker Toolbox
+$ docker ps
+CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS                      NAMES
+a4dac7afef9a        mongo               "docker-entrypoint.s…"   13 seconds ago      Up 6 seconds        0.0.0.0:27017->27017/tcp   condescending_volhard
+```
+
+Now we are going to give environment variables to service to connect with docker running on the docker. We will also see
+the database after connecting and then we deploy spring-music application then bind it. Below are the commands and output
+respectively.
+
+```cmd
+C:\Users\Naman Gupta\Desktop\02\07\applications>cf set-env mongo-service-broker MONGODB_HOST 192.168.99.1
+Setting env variable 'MONGODB_HOST' to 'localhost' for app mongo-service-broker in org pcfdev-org / space pcfdev-space as user...
+OK
+TIP: Use 'cf restage mongo-service-broker' to ensure your env variable changes take effect
+
+C:\Users\Naman Gupta\Desktop\02\07\applications>cf set-env mongo-service-broker MONGODB_PASSWORD password
+Setting env variable 'MONGODB_PASSWORD' to '' for app mongo-service-broker in org pcfdev-org / space pcfdev-space as user...
+OK
+TIP: Use 'cf restage mongo-service-broker' to ensure your env variable changes take effect
+
+C:\Users\Naman Gupta\Desktop\02\07\applications>cf restart mongo-service-broker
+Restarting app mongo-service-broker in org pcfdev-org / space pcfdev-space as user...
+
+Stopping app...
+
+Waiting for app to start...
+
+name:              mongo-service-broker
+requested state:   started
+instances:         1/1
+usage:             768M x 1 instances
+routes:            mongo-service-broker-delightful-kookaburra.local.pcfdev.io
+last uploaded:     Sat 15 Sep 14:06:36 IST 2018
+stack:             cflinuxfs2
+buildpack:         container-certificate-trust-store=2.0.0_RELEASE java-buildpack=v3.13-offline-https://github.com/cloudfoundry/java-buildpack.git#03b493f
+                   java-main open-jdk-like-jre=1.8.0_121 open-jdk-like-memory-calculator=2.0.2_RELEASE spring-auto-reconfiguration=1.10...
+start command:     CALCULATED_MEMORY=$($PWD/.java-buildpack/open_jdk_jre/bin/java-buildpack-memory-calculator-2.0.2_RELEASE
+                   -memorySizes=metaspace:64m..,stack:228k.. -memoryWeights=heap:65,metaspace:10,native:15,stack:10 -memoryInitials=heap:100%,metaspace:100%
+                   -stackThreads=300 -totMemory=$MEMORY_LIMIT) && JAVA_OPTS="-Djava.io.tmpdir=$TMPDIR
+                   -XX:OnOutOfMemoryError=$PWD/.java-buildpack/open_jdk_jre/bin/killjava.sh $CALCULATED_MEMORY
+                   -Djavax.net.ssl.trustStore=$PWD/.java-buildpack/container_certificate_trust_store/truststore.jks
+                   -Djavax.net.ssl.trustStorePassword=java-buildpack-trust-store-password" && SERVER_PORT=$PORT eval exec
+                   $PWD/.java-buildpack/open_jdk_jre/bin/java $JAVA_OPTS -cp $PWD/. org.springframework.boot.loader.JarLauncher
+
+     state     since                  cpu    memory           disk             details
+#0   running   2018-09-15T09:03:51Z   0.0%   273.1M of 768M   142.1M of 512M
+
+C:\Users\Naman Gupta\Desktop\02\07\applications>cf push spring-music -p spring-music.war -m 768M --random-route
+Pushing app spring-music to org pcfdev-org / space pcfdev-space as user...
+Getting app info...
+Creating app with these attributes...
++ name:       spring-music
+  path:       C:\Users\Naman Gupta\Desktop\02\07\applications\spring-music.war
++ memory:     768M
+  routes:
++   spring-music-patient-roan.local.pcfdev.io
+
+Creating app spring-music...
+Mapping routes...
+Comparing local files to remote cache...
+Packaging files to upload...
+Uploading files...
+ 345.92 KiB / 345.92 KiB [=========================================================================================================================] 100.00% 1s
+
+Waiting for API to complete processing files...
+
+Staging app and tracing logs...
+   Downloading dotnet-core_buildpack...
+   Downloading java_buildpack...
+   Downloading ruby_buildpack...
+   Downloading nodejs_buildpack...
+   Downloading go_buildpack...
+   Downloaded dotnet-core_buildpack
+   Downloading python_buildpack...
+   Downloaded java_buildpack
+   Downloading php_buildpack...
+   Downloaded ruby_buildpack
+   Downloading staticfile_buildpack...
+   Downloaded nodejs_buildpack
+   Downloading binary_buildpack...
+   Downloaded binary_buildpack
+   Downloaded staticfile_buildpack
+   Downloaded php_buildpack
+   Downloaded python_buildpack
+   Downloaded go_buildpack
+   Creating container
+   Successfully created container
+   Downloading app package...
+   Downloaded app package (24.5M)
+   Staging...
+   -----> Java Buildpack Version: v3.13 (offline) | https://github.com/cloudfoundry/java-buildpack.git#03b493f
+   -----> Downloading Open Jdk JRE 1.8.0_121 from https://java-buildpack.cloudfoundry.org/openjdk/trusty/x86_64/openjdk-1.8.0_121.tar.gz (found in cache)
+          Expanding Open Jdk JRE to .java-buildpack/open_jdk_jre (2.7s)
+   -----> Downloading Open JDK Like Memory Calculator 2.0.2_RELEASE from https://java-buildpack.cloudfoundry.org/memory-calculator/trusty/x86_64/memory-calculat
+or-2.0.2_RELEASE.tar.gz (found in cache)
+          Memory Settings: -Xms681574K -XX:MetaspaceSize=104857K -Xss349K -Xmx681574K -XX:MaxMetaspaceSize=104857K
+   -----> Downloading Container Certificate Trust Store 2.0.0_RELEASE from https://java-buildpack.cloudfoundry.org/container-certificate-trust-store/container-c
+ertificate-trust-store-2.0.0_RELEASE.jar (found in cache)
+          Adding certificates to .java-buildpack/container_certificate_trust_store/truststore.jks (2.0s)
+   -----> Downloading Spring Auto Reconfiguration 1.10.0_RELEASE from https://java-buildpack.cloudfoundry.org/auto-reconfiguration/auto-reconfiguration-1.10.0_R
+ELEASE.jar (found in cache)
+   -----> Downloading Tomcat Instance 8.0.41 from https://java-buildpack.cloudfoundry.org/tomcat/tomcat-8.0.41.tar.gz (found in cache)
+          Expanding Tomcat Instance to .java-buildpack/tomcat (0.2s)
+   -----> Downloading Tomcat Lifecycle Support 2.5.0_RELEASE from https://java-buildpack.cloudfoundry.org/tomcat-lifecycle-support/tomcat-lifecycle-support-2.5.
+0_RELEASE.jar (found in cache)
+   -----> Downloading Tomcat Logging Support 2.5.0_RELEASE from https://java-buildpack.cloudfoundry.org/tomcat-logging-support/tomcat-logging-support-2.5.0_RELE
+ASE.jar (found in cache)
+   -----> Downloading Tomcat Access Logging Support 2.5.0_RELEASE from https://java-buildpack.cloudfoundry.org/tomcat-access-logging-support/tomcat-access-loggi
+ng-support-2.5.0_RELEASE.jar (found in cache)
+   Exit status 0
+   Staging complete
+   Uploading droplet, build artifacts cache...
+   Uploading build artifacts cache...
+   Uploading droplet...
+   Uploaded build artifacts cache (108B)
+   Uploaded droplet (77.3M)
+   Uploading complete
+   Destroying container
+
+Waiting for app to start...
+
+name:              spring-music
+requested state:   started
+instances:         1/1
+usage:             768M x 1 instances
+routes:            spring-music-patient-roan.local.pcfdev.io
+last uploaded:     Sat 15 Sep 14:35:26 IST 2018
+stack:             cflinuxfs2
+buildpack:         container-certificate-trust-store=2.0.0_RELEASE java-buildpack=v3.13-offline-https://github.com/cloudfoundry/java-buildpack.git#03b493f
+                   open-jdk-like-jre=1.8.0_121 open-jdk-like-memory-calculator=2.0.2_RELEASE spring-auto-reconfiguration=1.10.0_RELEASE...
+start command:     CALCULATED_MEMORY=$($PWD/.java-buildpack/open_jdk_jre/bin/java-buildpack-memory-calculator-2.0.2_RELEASE
+                   -memorySizes=metaspace:64m..,stack:228k.. -memoryWeights=heap:65,metaspace:10,native:15,stack:10 -memoryInitials=heap:100%,metaspace:100%
+                   -stackThreads=300 -totMemory=$MEMORY_LIMIT) &&  JAVA_HOME=$PWD/.java-buildpack/open_jdk_jre JAVA_OPTS="-Djava.io.tmpdir=$TMPDIR
+                   -XX:OnOutOfMemoryError=$PWD/.java-buildpack/open_jdk_jre/bin/killjava.sh $CALCULATED_MEMORY
+                   -Djavax.net.ssl.trustStore=$PWD/.java-buildpack/container_certificate_trust_store/truststore.jks
+                   -Djavax.net.ssl.trustStorePassword=java-buildpack-trust-store-password -Djava.endorsed.dirs=$PWD/.java-buildpack/tomcat/endorsed
+                   -Daccess.logging.enabled=false -Dhttp.port=$PORT" exec $PWD/.java-buildpack/tomcat/bin/catalina.sh run
+
+     state     since                  cpu     memory           disk             details
+#0   running   2018-09-15T09:06:42Z   60.8%   304.4M of 768M   158.2M of 512M
+
+
+C:\Users\Naman Gupta\Desktop\02\07\applications>
+```
+
+We will explore interface of our application and then bind and see changes on application as well then we see the database
+we configured.
+
+![Before binding service](images/PreMongoService.PNG?raw=true)
+
+Now we will create one instance of our application and then bind it with spring music and then restart application.
+After that we will see the changes.
+
+```cmd
+C:\Users\Naman Gupta\Desktop\02\07\applications>cf restart mongo-service-broker
+Restarting app mongo-service-broker in org pcfdev-org / space pcfdev-space as user...
+
+Stopping app...
+
+Waiting for app to start...
+
+name:              mongo-service-broker
+requested state:   started
+
+C:\Users\Naman Gupta\Desktop\02\07\applications>cf create-service MongoDB-Naman standard music-db
+Creating service instance music-db in org pcfdev-org / space pcfdev-space as user...
+OK
+
+C:\Users\Naman Gupta\Desktop\02\07\applications>cf services
+Getting services in org pcfdev-org / space pcfdev-space as user...
+
+name       service         plan       bound apps   last operation
+music-db   MongoDB-Naman   standard                create succeeded
+
+C:\Users\Naman Gupta\Desktop\02\07\applications>cf bind-service spring-music music-db
+Binding service music-db to app spring-music in org pcfdev-org / space pcfdev-space as user...
+OK
+TIP: Use 'cf restage spring-music' to ensure your env variable changes take effect
+
+C:\Users\Naman Gupta\Desktop\02\07\applications>cf restart spring-music
+Restarting app spring-music in org pcfdev-org / space pcfdev-space as user...
+
+Stopping app...
+
+Waiting for app to start...
+
+name:              spring-music
+requested state:   started
+instances:         1/1
+usage:             768M x 1 instances
+routes:            spring-music-patient-roan.local.pcfdev.io
+last uploaded:     Sat 15 Sep 14:35:26 IST 2018
+stack:             cflinuxfs2
+buildpack:         container-certificate-trust-store=2.0.0_RELEASE java-buildpack=v3.13-offline-https://github.com/cloudfoundry/java-buildpack.git#03b493f
+                   open-jdk-like-jre=1.8.0_121 open-jdk-like-memory-calculator=2.0.2_RELEASE spring-auto-reconfiguration=1.10.0_RELEASE...
+start command:     CALCULATED_MEMORY=$($PWD/.java-buildpack/open_jdk_jre/bin/java-buildpack-memory-calculator-2.0.2_RELEASE
+                   -memorySizes=metaspace:64m..,stack:228k.. -memoryWeights=heap:65,metaspace:10,native:15,stack:10 -memoryInitials=heap:100%,metaspace:100%
+                   -stackThreads=300 -totMemory=$MEMORY_LIMIT) &&  JAVA_HOME=$PWD/.java-buildpack/open_jdk_jre JAVA_OPTS="-Djava.io.tmpdir=$TMPDIR
+                   -XX:OnOutOfMemoryError=$PWD/.java-buildpack/open_jdk_jre/bin/killjava.sh $CALCULATED_MEMORY
+                   -Djavax.net.ssl.trustStore=$PWD/.java-buildpack/container_certificate_trust_store/truststore.jks
+                   -Djavax.net.ssl.trustStorePassword=java-buildpack-trust-store-password -Djava.endorsed.dirs=$PWD/.java-buildpack/tomcat/endorsed
+                   -Daccess.logging.enabled=false -Dhttp.port=$PORT" exec $PWD/.java-buildpack/tomcat/bin/catalina.sh run
+
+     state     since                  cpu     memory           disk             details
+#0   running   2018-09-15T10:15:26Z   58.5%   269.9M of 768M   158.2M of 512M
+
+C:\Users\Naman Gupta\Desktop\02\07\applications>
+```
+
+We had created service and also bind with our application let's see the changes.
+
+![After binding service](images/PostMongoService.PNG?raw=true)
+
+Now let's observe these in mongoDB.
+
+1. Service instance(database) maintained in the database "mongodb-service-broker.serviceInstance"
+
+![Service Instance](images/serviceInstanceMongoDB.PNG?raw=true)
+
+2. Application binding maintained in the database "mongodb-service-broker.serviceInstanceBinding" with app-id
+
+![Service Binding Instance](images/serviceInstanceBindingMongoDB.PNG?raw=true)
+
+3. Application data in database configured within service
+
+![Application Data](images/applicationDataMongoDB.PNG?raw=true)
